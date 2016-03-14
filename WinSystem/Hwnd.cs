@@ -117,7 +117,7 @@ namespace WinSystem
         /// 根据句柄截取图像并保存成指定文件（bmp格式），图像可以是被窗口挡着的，但对非GDI程序无效
         /// </summary>
         /// <param name="intptr">窗口句柄</param>
-        /// <param name="intptr">保存路径</param>
+        /// <param name="filePath">保存路径</param>
         public static void GetWindowCapture(IntPtr intptr, string filePath)
         {
             GetWindowCapture(intptr).Save(filePath, ImageFormat.Bmp);

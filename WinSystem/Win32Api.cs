@@ -488,8 +488,8 @@ namespace WinSystem
         /// 创建与指定的设备环境相关的设备兼容的位图
         /// </summary>
         /// <param name="hdc">设备上下文环境的句柄</param>
-        /// <param name="nWidth">图像宽</param>
-        /// <param name="nHeight">图像高</param>
+        /// <param name="width">图像宽</param>
+        /// <param name="height">图像高</param>
         /// <returns></returns>
         [DllImport("gdi32.dll")]
         public static extern IntPtr CreateCompatibleBitmap(IntPtr hdc, int width, int height);
