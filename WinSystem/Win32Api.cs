@@ -82,6 +82,38 @@ namespace WinSystem
         /// 单选复选选中状态
         /// </summary>
         public const int BM_GETCHECK = 0x00F0;
+        /// <summary>
+        /// 通道叠加
+        /// </summary>
+        public const byte AC_SRC_OVER = 0;
+        /// <summary>
+        /// 开启α混合
+        /// </summary>
+        public const Int32 ULW_ALPHA = 2;
+        /// <summary>
+        /// α通道叠加值
+        /// </summary>
+        public const byte AC_SRC_ALPHA = 1;
+        /// <summary>
+        /// 使窗体支持透明ModifyStyleEx(0, WS_EX_LAYERED);效果
+        /// </summary>
+        public const uint WS_EX_LAYERED = 0x80000;
+        /// <summary>
+        /// 半透明窗口
+        /// </summary>
+        public const int WS_EX_TRANSPARENT = 0x20;
+        /// <summary>
+        /// 设定一个新的窗口风格。
+        /// </summary>
+        public const int GWL_STYLE = (-16);
+        /// <summary>
+        /// 设定一个新的扩展风格。
+        /// </summary>
+        public const int GWL_EXSTYLE = (-20);
+        /// <summary>
+        /// 表示把窗体设置成半透明样式
+        /// </summary>
+        public const int LWA_ALPHA = 0;
 
         #region 系统配置编号
         //public const int SM_CXSCREEN = 0;
@@ -134,7 +166,7 @@ namespace WinSystem
         /// 声明键盘钩子的封送结构类型 
         /// </summary>
         [StructLayout(LayoutKind.Sequential)]
-        public class KeyboardHookStruct
+        public struct KeyboardHookStruct
         {
             /// <summary>
             /// 表示一个在1到254间的虚似键盘码
@@ -164,23 +196,33 @@ namespace WinSystem
         /// 鼠标坐标结构类型
         /// </summary>
         [StructLayout(LayoutKind.Sequential)]
-        public class POINT
+        public struct POINT
         {
             /// <summary>
             /// x像素
             /// </summary>
-            public int x;
+            public Int32 x;
             /// <summary>
             /// y像素
             /// </summary>
-            public int y;
+            public Int32 y;
+            /// <summary>
+            /// 构造函数
+            /// </summary>
+            /// <param name="x"></param>
+            /// <param name="y"></param>
+            public POINT(Int32 x, Int32 y)
+            {
+                this.x = x;
+                this.y = y;
+            }
         }
 
         /// <summary>
         /// 鼠标钩子结构类型
         /// </summary>
         [StructLayout(LayoutKind.Sequential)]
-        public class MouseHookStruct
+        public struct MouseHookStruct
         {
             /// <summary>
             /// 坐标
@@ -221,6 +263,56 @@ namespace WinSystem
             /// 下端位置
             /// </summary>
             public int bottom;
+        }
+
+        /// <summary>
+        /// 窗口大小
+        /// </summary>
+        [StructLayout(LayoutKind.Sequential)]
+        public struct Size
+        {
+            /// <summary>
+            /// 窗口x轴宽度
+            /// </summary>
+            public Int32 cx;
+            /// <summary>
+            /// 窗口y轴高度
+            /// </summary>
+            public Int32 cy;
+            /// <summary>
+            /// 构造函数
+            /// </summary>
+            /// <param name="x"></param>
+            /// <param name="y"></param>
+            public Size(Int32 x, Int32 y)
+            {
+                cx = x;
+                cy = y;
+            }
+        }
+
+        /// <summary>
+        /// 颜色通道
+        /// </summary>
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        public struct BLENDFUNCTION
+        {
+            /// <summary>
+            /// BlendOp
+            /// </summary>
+            public byte BlendOp;
+            /// <summary>
+            /// BlendFlags
+            /// </summary>
+            public byte BlendFlags;
+            /// <summary>
+            /// SourceConstantAlpha
+            /// </summary>
+            public byte SourceConstantAlpha;
+            /// <summary>
+            /// AlphaFormat
+            /// </summary>
+            public byte AlphaFormat;
         }
 
         #endregion
@@ -466,14 +558,14 @@ namespace WinSystem
         /// <param name="lpszOutput">输出</param>
         /// <param name="lpInitData">输入</param>
         /// <returns>设备上下文环境的句柄</returns>
-        [DllImport("gdi32.dll")]
+        [DllImport("gdi32.dll", ExactSpelling = true, SetLastError = true)]
         public static extern IntPtr CreateDC(string lpszDriver,string lpszDevice,string lpszOutput,IntPtr lpInitData);
         /// <summary>
         /// 获取窗口的设备环境
         /// </summary>
         /// <param name="hwnd">窗口句柄</param>
         /// <returns>设备上下文环境的句柄</returns>
-        [DllImport("user32.dll")]
+        [DllImport("user32.dll", ExactSpelling = true, SetLastError = true)]
         public static extern IntPtr GetWindowDC(IntPtr hwnd);
 
         /// <summary>
@@ -481,8 +573,16 @@ namespace WinSystem
         /// </summary>
         /// <param name="hdc">设备上下文环境的句柄</param>
         /// <returns></returns>
-        [DllImport("gdi32.dll")]
+        [DllImport("gdi32.dll", ExactSpelling = true, SetLastError = true)]
         public static extern IntPtr CreateCompatibleDC(IntPtr hdc);
+
+        /// <summary>
+        /// 检索一指定窗口的客户区域或整个屏幕的显示设备上下文环境的句柄，以后可以在GDI函数中使用该句柄来在设备上下文环境中绘图
+        /// </summary>
+        /// <param name="hWnd"></param>
+        /// <returns></returns>
+        [DllImport("user32.dll", ExactSpelling = true, SetLastError = true)]
+        public static extern IntPtr GetDC(IntPtr hWnd);
 
         /// <summary>
         /// 创建与指定的设备环境相关的设备兼容的位图
@@ -500,16 +600,25 @@ namespace WinSystem
         /// <param name="hdc">设备上下文环境的句柄</param>
         /// <param name="hgdiobj">被选择的对象的句柄</param>
         /// <returns>如果选择对象不是区域并且函数执行成功，那么返回值是被取代的对象的句柄；如果选择对象是区域并且函数执行成功</returns>
-        [DllImport("gdi32.dll")]
+        [DllImport("gdi32.dll", ExactSpelling = true)]
         public static extern IntPtr SelectObject(IntPtr hdc,IntPtr hgdiobj);
-        
+
+        /// <summary>
+        /// 释放设备上下文环境（DC）
+        /// </summary>
+        /// <param name="hWnd"></param>
+        /// <param name="hDC"></param>
+        /// <returns></returns>
+        [DllImport("user32.dll", ExactSpelling = true)]
+        public static extern int ReleaseDC(IntPtr hWnd, IntPtr hDC);
+
         /// <summary>
         /// 删除指定的设备上下文环境
         /// </summary>
         /// <param name="hdc">设备上下文环境的句柄</param>
         /// <returns>成功:非0 失败:0</returns>
-        [DllImport("gdi32.dll")]
-        public static extern int DeleteDC(IntPtr hdc );
+        [DllImport("gdi32.dll", ExactSpelling = true, SetLastError = true)]
+        public static extern int DeleteDC(IntPtr hdc);
        
         /// <summary>
         /// 截取非屏幕区的窗口
@@ -521,6 +630,66 @@ namespace WinSystem
         [DllImport("user32.dll")]
         public static extern bool PrintWindow(IntPtr hwnd, IntPtr hdcBlt, UInt32 nFlags);
 
+        /// <summary>
+        /// 删除一个逻辑笔、画笔、字体、位图、区域或者调色板，释放所有与该对象有关的系统资源，在对象被删除之后，指定的句柄也就失效了
+        /// 注释：当一个绘画对象（如笔或画笔）当前被选入一个设备上下文环境时不要删除该对象。当一个调色板画笔被删除时，与该画笔相关的位图并不被删除，该图必须单独地删除。
+        /// </summary>
+        /// <param name="hObj"></param>
+        /// <returns>成功，返回非零值；如果指定的句柄无效或者它已被选入设备上下文环境，则返回值为零</returns>
+        [DllImport("gdi32.dll", ExactSpelling = true, SetLastError = true)]
+        public static extern int DeleteObject(IntPtr hObj);
+
+        /// <summary>
+        /// 更新一个分层窗口的位置，大小，形状，内容和半透明度
+        /// </summary>
+        /// <param name="hwnd"></param>
+        /// <param name="hdcDst"></param>
+        /// <param name="pptDst"></param>
+        /// <param name="psize"></param>
+        /// <param name="hdcSrc"></param>
+        /// <param name="pptSrc"></param>
+        /// <param name="crKey"></param>
+        /// <param name="pblend"></param>
+        /// <param name="dwFlags"></param>
+        /// <returns></returns>
+        [DllImport("user32.dll", ExactSpelling = true, SetLastError = true)]
+        public static extern int UpdateLayeredWindow(IntPtr hwnd, IntPtr hdcDst, ref POINT pptDst, ref Size psize, IntPtr hdcSrc, ref POINT pptSrc, Int32 crKey, ref BLENDFUNCTION pblend, Int32 dwFlags);
+        /// <summary>
+        /// 此函数用于设置分层窗口透明度，常和 UpdateLayeredWindow 函数结合使用。
+        /// </summary>
+        /// <param name="hwnd"></param>
+        /// <param name="crKey"></param>
+        /// <param name="bAlpha"></param>
+        /// <param name="dwFlags"></param>
+        /// <returns></returns>
+        [DllImport("user32", EntryPoint = "SetLayeredWindowAttributes")]
+        public static extern int SetLayeredWindowAttributes(IntPtr hwnd, int crKey, int bAlpha, int dwFlags);
+        /// <summary>
+        /// 根据世界转换修改区域
+        /// </summary>
+        /// <param name="lpXform"></param>
+        /// <param name="nCount"></param>
+        /// <param name="rgnData"></param>
+        /// <returns></returns>
+        [DllImport("gdi32.dll", ExactSpelling = true, SetLastError = true)]
+        public static extern IntPtr ExtCreateRegion(IntPtr lpXform, uint nCount, IntPtr rgnData);
+        /// <summary>
+        /// 改变指定窗口的属性．函数也将指定的一个32位值设置在窗口的额外存储空间的指定偏移位置
+        /// </summary>
+        /// <param name="hwnd"></param>
+        /// <param name="nIndex"></param>
+        /// <param name="dwNewLong"></param>
+        /// <returns></returns>
+        [DllImport("user32", EntryPoint = "SetWindowLong")]
+        public static extern uint SetWindowLong(IntPtr hwnd, int nIndex, uint dwNewLong);
+        /// <summary>
+        /// 获得指定窗口的有关信息，函数也获得在额外窗口内存中指定偏移位地址的32位度整型值
+        /// </summary>
+        /// <param name="hwnd"></param>
+        /// <param name="nIndex"></param>
+        /// <returns></returns>
+        [DllImport("user32", EntryPoint = "GetWindowLong")]
+        public static extern uint GetWindowLong(IntPtr hwnd, int nIndex);
         #endregion
 
     }
