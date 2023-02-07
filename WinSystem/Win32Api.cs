@@ -696,7 +696,7 @@ namespace WinSystem
         /// </summary>
         /// <returns></returns>
         [DllImport("user32.dll", EntryPoint = "GetDesktopWindow", CharSet = CharSet.Auto, SetLastError = true)]
-        static extern IntPtr GetDesktopWindow();
+        public static extern IntPtr GetDesktopWindow();
         #endregion
 
     }
