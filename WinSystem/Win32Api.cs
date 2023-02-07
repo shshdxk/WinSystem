@@ -690,6 +690,13 @@ namespace WinSystem
         /// <returns></returns>
         [DllImport("user32", EntryPoint = "GetWindowLong")]
         public static extern uint GetWindowLong(IntPtr hwnd, int nIndex);
+
+        /// <summary>
+        /// 获取桌面句柄
+        /// </summary>
+        /// <returns></returns>
+        [DllImport("user32.dll", EntryPoint = "GetDesktopWindow", CharSet = CharSet.Auto, SetLastError = true)]
+        static extern IntPtr GetDesktopWindow();
         #endregion
 
     }
