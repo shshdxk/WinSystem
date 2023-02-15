@@ -697,6 +697,32 @@ namespace WinSystem
         /// <returns></returns>
         [DllImport("user32.dll", EntryPoint = "GetDesktopWindow", CharSet = CharSet.Auto, SetLastError = true)]
         public static extern IntPtr GetDesktopWindow();
+
+        /// <summary>
+        /// 设置嵌套窗口
+        /// </summary>
+        /// <param name="hWndChild"></param>
+        /// <param name="hWndNewParent"></param>
+        /// <returns></returns>
+        [DllImport("user32.dll")]
+        public static extern IntPtr SetParent(IntPtr hWndChild, IntPtr hWndNewParent);
+
+        /// <summary>
+        /// 窗口句柄枚举回调
+        /// </summary>
+        /// <param name="hwnd"></param>
+        /// <param name="lParam"></param>
+        /// <returns></returns>
+        public delegate bool EnumWindowsCallback(IntPtr hwnd, int lParam);
+
+        /// <summary>
+        /// 列举窗口所有句柄
+        /// </summary>
+        /// <param name="callPtr"></param>
+        /// <param name="lParam"></param>
+        /// <returns></returns>
+        [DllImport("user32.dll")]
+        public static extern int EnumWindows(EnumWindowsCallback callPtr, int lParam);
         #endregion
 
     }
